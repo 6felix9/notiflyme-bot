@@ -57,9 +57,14 @@ celery -A celery_worker beat --loglevel=info
 - `start_handler.py` / `help_handler.py` - Basic bot interaction
 
 **utils/** - Core utilities:
-- `db.py` - MongoDB connection management with environment-aware URI
+- `db.py` - MongoDB connection management with singleton DatabaseManager pattern
 - `gemini_dateparser.py` - Natural language date parsing using Gemini 2.0 Flash Lite
 - `time_converter.py` - Timezone conversion between SGT and UTC
+- `validation.py` - Input validation and sanitization functions
+- `exceptions.py` - Custom exception classes for error handling
+- `logger.py` - Centralized logging configuration
+
+**config.py** - Configuration management with environment variable validation
 
 **reminder_tasks.py** - Background task that queries MongoDB for due reminders and sends them via Telegram
 
@@ -83,10 +88,12 @@ celery -A celery_worker beat --loglevel=info
 
 ### Environment Configuration
 
-- `API_KEY` - Telegram Bot API token (stored in config.py)
-- `GEMINI_API_KEY` - Google Gemini API key for date parsing (stored in config.py)
-- `MONGO_URI` - MongoDB connection string (environment variable, defaults to localhost)
-- Redis connection hardcoded to `redis://redis:6379/0` in Docker setup
+- `API_KEY` - Telegram Bot API token (required environment variable)
+- `GEMINI_API_KEY` - Google Gemini API key for date parsing (required environment variable)
+- `MONGO_URI` - MongoDB connection string (optional, defaults to mongodb://localhost:27017)
+- `REDIS_URL` - Redis connection URL (optional, defaults to redis://redis:6379/0)
+
+Configuration is managed by config.py which validates required variables on startup and raises ConfigError if missing.
 
 ### Database Schema
 
@@ -105,10 +112,11 @@ Reminders collection document structure:
 
 ### Security Considerations
 
-- API keys are stored in config.py (should be moved to environment variables)
+- API keys loaded from environment variables with validation
 - MongoDB runs without authentication in Docker setup
 - No rate limiting implemented for bot commands
-- User input is escaped for Telegram MarkdownV2 formatting
+- User input validation and sanitization implemented in validation.py
+- Telegram MarkdownV2 escaping for safe message formatting
 
 ## Testing
 
