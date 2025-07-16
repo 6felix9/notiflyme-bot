@@ -120,3 +120,9 @@ dmypy.json
 
 # pytype static analyzer
 .pytype/
+
+# Node.js dependencies
+node_modules/
+
+# macOS files
+.DS_Store

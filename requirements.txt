@@ -1,4 +1,18 @@
-python-telegram-bot
-pymongo
-celery
-redis
+# Telegram Bot Framework
+python-telegram-bot==21.0.1
+
+# Database
+pymongo==4.6.3
+
+# Background Task Processing
+celery==5.3.6
+redis==5.0.4
+
+# AI/ML
+google-genai==1.25.0
+
+# Data Validation
+pydantic==2.7.1
+
+# Utilities
+python-dotenv==1.0.1
