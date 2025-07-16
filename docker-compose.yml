@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis
+
+  mongodb:
+    image: mongo
+    container_name: notiflymebot-mongo
+    ports:
+      - "27017:27017"  # optional; expose for local testing
+
+  worker:
+    build: .
+    command: celery -A celery_worker worker --loglevel=info
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017  # use this in your config
+
+  beat:
+    build: .
+    command: celery -A celery_worker beat --loglevel=info
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
