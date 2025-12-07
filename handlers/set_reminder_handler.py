@@ -7,7 +7,7 @@ to create new reminders through a multi-step conversation.
 
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters
-from utils.db import get_reminders_collection
+from utils.db import get_reminders_collection, get_user_timezone
 from utils.gemini_dateparser import gemini_dateparser
 from utils.time_converter import sgt_to_utc
 from utils.logger import setup_logger
@@ -96,29 +96,39 @@ async def handle_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     try:
         # Validate and sanitize date input
         user_date = validate_date_input(update.message.text)
+        
+        # Get user's timezone preference
+        user_tz = get_user_timezone(update.message.from_user.id)
 
-        # Parse user input and get the SGT time
-        sgt_time = gemini_dateparser(user_date)
+        # Parse user input and get the time in user's timezone (using AI async call)
+        await update.message.reply_chat_action("typing")  # Show typing indicator
+        parsed_time = await gemini_dateparser(user_date, user_tz)
 
         # Check for unhelpful input
-        if sgt_time is None:
+        if parsed_time is None:
             await update.message.reply_text("I couldn't understand the date. Please try again.")
             return WAITING_FOR_DATE
         
+        # Defensive check: ensure parsed_time has timezone info
+        if parsed_time.tzinfo is None:
+            logger.warning(f"Parsed time missing tzinfo, defaulting to user timezone: {user_tz}")
+            parsed_time = parsed_time.replace(tzinfo=ZoneInfo(user_tz))
+        
         # Check if date is in the past
-        now_sgt = datetime.now(ZoneInfo("Asia/Singapore"))
-        if sgt_time <= now_sgt:
+        # We compare against current time in the user's timezone
+        now_local = datetime.now(parsed_time.tzinfo)
+        if parsed_time <= now_local:
             await update.message.reply_text("❌ The date must be in the future. Please enter a future date.")
             return WAITING_FOR_DATE
 
-        # Convert SGT time to UTC for storage
-        utc_time = sgt_to_utc(sgt_time)
+        # Convert local time to UTC for storage
+        utc_time = sgt_to_utc(parsed_time)  # sgt_to_utc handles generic awareness
 
         # Store the time
         context.user_data["reminder_date"] = utc_time
 
         # Insert
-        return await handle_insert(update, context, sgt_time)
+        return await handle_insert(update, context, parsed_time)
         
     except ValidationError as e:
         await update.message.reply_text(f"❌ {str(e)} Please try again.")
@@ -129,7 +139,7 @@ async def handle_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         return WAITING_FOR_DATE
     
 # Insert reminder into the database
-async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, sgt_time) -> int:
+async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, parsed_time) -> int:
     """
     Insert the validated reminder into the database.
     
@@ -139,7 +149,7 @@ async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, sgt_
     Args:
         update: Telegram update object
         context: Telegram context object
-        sgt_time: Parsed reminder time in Singapore timezone
+        parsed_time: Parsed reminder time in User's timezone
         
     Returns:
         int: ConversationHandler.END
@@ -165,8 +175,9 @@ async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, sgt_
         })
         
         # Confirm to user
-        formatted_sgt_time = sgt_time.strftime("%A, %B %d at %I:%M %p")
-        message = f"Got it! Reminder set for {formatted_sgt_time}"
+        # Confirm to user
+        formatted_time = parsed_time.strftime("%A, %B %d at %I:%M %p")
+        message = f"Got it! Reminder set for {formatted_time}"
         await update.message.reply_text(message)
         logger.info(f"Successfully saved reminder for user {user_id}: {reminder}")
         return ConversationHandler.END

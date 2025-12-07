@@ -55,6 +55,7 @@ Required environment variables:
 - `/start` - Welcome message and basic information
 - `/setreminder` - Create a new reminder (interactive conversation)
 - `/listreminders` - View all your upcoming reminders
+- `/settimezone` - Set your local timezone (default: Asia/Singapore)
 - `/clearall` - Delete all your reminders
 - `/help` - Show available commands
 - `/cancel` - Cancel current operation

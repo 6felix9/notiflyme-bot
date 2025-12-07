@@ -12,6 +12,7 @@ from handlers.help_handler import help_handler
 from handlers.set_reminder_handler import set_reminder_handler
 from handlers.list_reminders_handler import list_reminders_handler
 from handlers.clear_all_handler import clear_all_handler
+from handlers.timezone_handler import timezone_handler
 
 
 def main() -> None:
@@ -27,6 +28,7 @@ def main() -> None:
     # Add handlers
     application.add_handler(start_handler)
     application.add_handler(help_handler)
+    application.add_handler(timezone_handler)  # Register timezone handler
     application.add_handler(set_reminder_handler)
     application.add_handler(list_reminders_handler)
     application.add_handler(clear_all_handler)
