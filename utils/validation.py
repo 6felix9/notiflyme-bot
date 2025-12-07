@@ -193,3 +193,45 @@ def validate_username(username: Optional[str]) -> Optional[str]:
         raise ValidationError("Invalid username format")
     
     return username
+
+
+# Additional patterns to block for LLM safety
+LLM_INJECTION_PATTERNS = [
+    re.compile(r'ignore\s+(previous|above|all)', re.IGNORECASE),
+    re.compile(r'disregard\s+instructions', re.IGNORECASE),
+    re.compile(r'system\s*:', re.IGNORECASE),
+    re.compile(r'assistant\s*:', re.IGNORECASE),
+    re.compile(r'```', re.IGNORECASE),  # Code blocks
+    re.compile(r'\{.*"sgt_datetime"', re.IGNORECASE),  # Attempting to inject JSON
+]
+
+
+def sanitize_for_llm(text: str) -> str:
+    """
+    Sanitize text before sending to LLM to prevent prompt injection.
+    
+    Args:
+        text: Input text to sanitize
+        
+    Returns:
+        str: Sanitized text safe for LLM prompt
+    """
+    # First apply general sanitization
+    text = sanitize_text(text)
+    
+    if not text:
+        return ""
+    
+    # Remove any patterns that could be injection attempts
+    for pattern in LLM_INJECTION_PATTERNS:
+        if pattern.search(text):
+            logger.warning(f"Blocked potential LLM injection: {text[:50]}...")
+            # Replace suspicious content with a safe placeholder
+            text = pattern.sub("[REMOVED]", text)
+    
+    # Limit length specifically for LLM input
+    max_llm_length = 300
+    if len(text) > max_llm_length:
+        text = text[:max_llm_length]
+    
+    return text
