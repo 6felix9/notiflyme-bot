@@ -6,25 +6,53 @@ A Telegram reminder bot that lets you set reminders using natural language. Simp
 
 1. **Set a Reminder**: Use `/setreminder` and type what you want to be reminded of
 2. **Natural Language Date**: Enter when you want the reminder (e.g., "tomorrow at 3pm", "next Friday", "in 2 hours")
-3. **AI Date Parsing**: Gemini AI converts your natural language into a precise datetime and stores it in MongoDB
+3. **AI Date Parsing**: Groq AI converts your natural language into a precise datetime and stores it in MongoDB
 4. **Automatic Delivery**: Background worker checks every 10 seconds and sends your reminder at the exact scheduled time
 
-## Quick Start
+## Deployment Guide
 
-### Docker (Recommended)
+Follow these steps to deploy the bot to your remote instance using Docker.
+
+### 1. Build and Push (From your local machine)
+
+Build the Docker image for **arm64** (common for modern cloud instances) and push it to Docker Hub.
 
 ```bash
-# Clone and navigate to the project
-git clone <repository-url>
-cd NotiflyMeBot
+# Build the image for arm64
+docker build --platform linux/arm64 -t felixlmao/notiflyme-bot:latest .
 
-# Create environment file
-cp .env.example .env
-# Edit .env with your API keys
-
-# Start all services
-docker-compose up
+# Log in and push
+docker login
+docker push felixlmao/notiflyme-bot:latest
 ```
+
+### 2. Setup Instance (On your remote server)
+
+On your remote instance, create a directory and the `.env` file.
+
+```bash
+mkdir ~/notiflyme-bot && cd ~/notiflyme-bot
+nano .env
+```
+
+Add your production credentials:
+```text
+API_KEY=your_telegram_bot_token
+GROQ_API_KEY=your_groq_api_key
+AUTHORIZED_USER_ID=1522275008
+```
+
+### 3. Deploy and Run
+
+Create or copy `docker-compose.yml` to the instance, then run:
+
+```bash
+# Pull and start services in background
+docker pull felixlmao/notiflyme-bot:latest
+docker compose up -d
+```
+
+To view logs: `docker compose logs -f`
 
 ### Local Development
 
@@ -47,8 +75,9 @@ Required environment variables:
 
 - `API_KEY` - Your Telegram Bot API token (from @BotFather)
 - `GROQ_API_KEY` - Groq API key for natural language date parsing
-- `MONGO_URI` - MongoDB connection string (defaults to localhost)
-- `REDIS_URL` - Redis connection URL (defaults to redis://redis:6379/0)
+- `AUTHORIZED_USER_ID` - Your Telegram User ID (only this user can use the bot)
+- `MONGO_URI` - MongoDB connection string (e.g., `mongodb://mongodb:27017` in Docker)
+- `REDIS_URL` - Redis connection URL (e.g., `redis://redis:6379/0` in Docker)
 
 ## Usage
 

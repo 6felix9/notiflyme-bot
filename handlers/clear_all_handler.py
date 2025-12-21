@@ -42,6 +42,10 @@ async def clearall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
+from utils.auth import restricted
+
+
+@restricted
 async def confirm_clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Ask the user to confirm clearing all reminders.

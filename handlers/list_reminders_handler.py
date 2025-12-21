@@ -20,6 +20,10 @@ logger = setup_logger(__name__)
 
 collection = get_reminders_collection()
 
+from utils.auth import restricted
+
+
+@restricted
 async def listreminders(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Handle the /listreminders command.

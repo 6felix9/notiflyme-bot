@@ -26,7 +26,11 @@ collection = get_reminders_collection()
 WAITING_FOR_REMINDER = 1
 WAITING_FOR_DATE = 2
 
+from utils.auth import restricted
+
+
 # Set reminder command
+@restricted
 async def setreminder(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Start the reminder creation process.

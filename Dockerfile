@@ -17,11 +17,11 @@ RUN pip install --upgrade pip && \
 # Copy application code (excluding files in .dockerignore)
 COPY --chown=appuser:appuser . .
 
+# Create necessary directories and set permissions
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
+
 # Switch to non-root user
 USER appuser
-
-# Create necessary directories with proper permissions
-RUN mkdir -p /app/logs
 
 # Health check to ensure the application is running properly
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

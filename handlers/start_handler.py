@@ -9,6 +9,10 @@ from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
 
 
+from utils.auth import restricted
+
+
+@restricted
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Handle the /start command.
