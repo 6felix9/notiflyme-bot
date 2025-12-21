@@ -28,7 +28,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "• /listreminders - View all your upcoming reminders.\n"
         "• /cancel - Cancel any ongoing operation (like setting a reminder).\n"
         "• /clearall - Clear all reminders.\n\n"
-        "💡 Tip: Use /setreminder to quickly add a reminder"
+        "💡 Tip: Reminders are set and shown in Singapore Time (SGT)."
     )
     await update.message.reply_text(message)
 

@@ -7,8 +7,8 @@ to create new reminders through a multi-step conversation.
 
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters
-from utils.db import get_reminders_collection, get_user_timezone
-from utils.gemini_dateparser import gemini_dateparser
+from utils.db import get_reminders_collection
+from utils.groq_dateparser import groq_dateparser
 from utils.time_converter import sgt_to_utc
 from utils.logger import setup_logger
 from utils.validation import validate_reminder_text, validate_date_input, validate_user_id, validate_username
@@ -97,12 +97,12 @@ async def handle_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         # Validate and sanitize date input
         user_date = validate_date_input(update.message.text)
         
-        # Get user's timezone preference
-        user_tz = get_user_timezone(update.message.from_user.id)
+        # Hardcoded timezone for all users
+        user_tz = "Asia/Singapore"
 
-        # Parse user input and get the time in user's timezone (using AI async call)
+        # Parse user input and get the time in SGT (using AI async call)
         await update.message.reply_chat_action("typing")  # Show typing indicator
-        parsed_time = await gemini_dateparser(user_date, user_tz)
+        parsed_time = await groq_dateparser(user_date)
 
         # Check for unhelpful input
         if parsed_time is None:
@@ -111,7 +111,7 @@ async def handle_date(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         
         # Defensive check: ensure parsed_time has timezone info
         if parsed_time.tzinfo is None:
-            logger.warning(f"Parsed time missing tzinfo, defaulting to user timezone: {user_tz}")
+            logger.error(f"Parsed time missing tzinfo, defaulting to SGT")
             parsed_time = parsed_time.replace(tzinfo=ZoneInfo(user_tz))
         
         # Check if date is in the past
@@ -149,7 +149,7 @@ async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, pars
     Args:
         update: Telegram update object
         context: Telegram context object
-        parsed_time: Parsed reminder time in User's timezone
+        parsed_time: Parsed reminder time in Singapore Time (SGT)
         
     Returns:
         int: ConversationHandler.END
@@ -174,7 +174,6 @@ async def handle_insert(update: Update, context: ContextTypes.DEFAULT_TYPE, pars
             "created_at": datetime.now(timezone.utc),
         })
         
-        # Confirm to user
         # Confirm to user
         formatted_time = parsed_time.strftime("%A, %B %d at %I:%M %p")
         message = f"Got it! Reminder set for {formatted_time}"

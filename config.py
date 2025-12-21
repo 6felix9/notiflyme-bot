@@ -8,6 +8,10 @@ required for the bot to function properly.
 import os
 import sys
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class ConfigError(Exception):
@@ -45,7 +49,7 @@ def validate_config() -> None:
     Raises:
         ConfigError: If any required configuration is missing
     """
-    required_vars = ["API_KEY", "GEMINI_API_KEY"]
+    required_vars = ["API_KEY", "GROQ_API_KEY"]
     missing_vars = []
     
     for var in required_vars:
@@ -57,7 +61,7 @@ def validate_config() -> None:
             f"Missing required environment variables: {', '.join(missing_vars)}\n\n"
             "Please set the following environment variables:\n"
             "- API_KEY: Your Telegram Bot API token\n"
-            "- GEMINI_API_KEY: Your Google Gemini API key\n"
+            "- GROQ_API_KEY: Your Groq API key\n"
             "- MONGO_URI: MongoDB connection string (optional, defaults to localhost)\n"
             "- REDIS_URL: Redis connection URL (optional, defaults to redis://redis:6379/0)"
         )
@@ -73,7 +77,7 @@ except ConfigError as e:
 
 # Export configuration variables
 API_KEY = get_env_var("API_KEY")
-GEMINI_API_KEY = get_env_var("GEMINI_API_KEY")
+GROQ_API_KEY = get_env_var("GROQ_API_KEY")
 MONGO_URI = get_env_var("MONGO_URI", required=False, default="mongodb://localhost:27017")
 REDIS_URL = get_env_var("REDIS_URL", required=False, default="redis://redis:6379/0")
 

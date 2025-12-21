@@ -9,7 +9,8 @@ celery==5.3.6
 redis==5.0.4
 
 # AI/ML
-google-genai==1.25.0
+openai>=1.0.0
+groq>=0.9.0
 
 # Data Validation
 pydantic==2.7.1

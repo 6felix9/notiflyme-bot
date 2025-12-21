@@ -87,68 +87,6 @@ def get_reminders_collection() -> Collection:
     """
     return db_manager.reminders_collection
 
-# User settings configuration
-USERS_COLLECTION = "users"
-
-
-def get_users_collection() -> Collection:
-    """
-    Returns the users collection.
-    
-    Returns:
-        Collection: MongoDB users collection
-    """
-    return db_manager.database[USERS_COLLECTION]
-
-
-def get_user_timezone(user_id: int) -> str:
-    """
-    Get user's timezone preference.
-    
-    Args:
-        user_id: Telegram user ID
-        
-    Returns:
-        str: User's timezone string, defaults to 'Asia/Singapore'
-    """
-    try:
-        users = get_users_collection()
-        user = users.find_one({"user_id": user_id})
-        if user and "timezone" in user:
-            return user["timezone"]
-    except Exception as e:
-        logger.error(f"Error fetching user timezone: {e}")
-        
-    return "Asia/Singapore"  # Default fallback
-
-
-def set_user_timezone(user_id: int, tz_string: str) -> bool:
-    """
-    Set user's timezone preference.
-    
-    Args:
-        user_id: Telegram user ID
-        tz_string: Timezone string to set
-        
-    Returns:
-        bool: True if successful
-    """
-    try:
-        users = get_users_collection()
-        users.update_one(
-            {"user_id": user_id},
-            {"$set": {
-                "timezone": tz_string, 
-                "updated_at": datetime.now(timezone.utc)
-            }},
-            upsert=True
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error setting user timezone: {e}")
-        return False
-
-
 # Optional: Test connection when the script runs
 if __name__ == "__main__":
     db = get_database()

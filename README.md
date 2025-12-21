@@ -46,7 +46,7 @@ celery -A celery_worker beat --loglevel=info
 Required environment variables:
 
 - `API_KEY` - Your Telegram Bot API token (from @BotFather)
-- `GEMINI_API_KEY` - Google Gemini API key for natural language parsing
+- `GROQ_API_KEY` - Groq API key for natural language date parsing
 - `MONGO_URI` - MongoDB connection string (defaults to localhost)
 - `REDIS_URL` - Redis connection URL (defaults to redis://redis:6379/0)
 
@@ -55,10 +55,12 @@ Required environment variables:
 - `/start` - Welcome message and basic information
 - `/setreminder` - Create a new reminder (interactive conversation)
 - `/listreminders` - View all your upcoming reminders
-- `/settimezone` - Set your local timezone (default: Asia/Singapore)
 - `/clearall` - Delete all your reminders
 - `/help` - Show available commands
 - `/cancel` - Cancel current operation
+
+> [!NOTE]
+> All reminders use **Singapore Time (SGT)**. The bot is hardcoded to SGT for consistency.
 
 ### Example
 
